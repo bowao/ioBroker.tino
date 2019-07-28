@@ -1,0 +1,98 @@
+{
+    "common": {
+        "name": "tino",
+        "version": "0.0.1",
+        "news": {
+            "0.0.1": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie"
+            }
+        },
+        "title": "TiNo",
+        "titleLang": {
+            "en": "TiNo",
+            "de": "TiNo",
+            "ru": "TiNo",
+            "pt": "TiNo",
+            "nl": "TiNo",
+            "fr": "TiNo",
+            "it": "TiNo",
+            "es": "TiNo",
+            "pl": "TiNo"
+        },
+        "desc": {
+            "en": "Read wireless sensordata received via TiNo",
+            "de": "Einlesen der vom TiNo empfangenen Funksensordaten",
+            "ru": "Чтение беспроводных сенсордат, полученных через TiNo",
+            "pt": "Leia sensordata sem fio recebido via TiNo",
+            "nl": "Lees draadloze sensordata ontvangen via TiNo",
+            "fr": "Lire les sensordata sans fil reçus via TiNo",
+            "it": "Leggi la sensordata wireless ricevuta tramite TiNo",
+            "es": "Lee sensordata inalámbrica recibida a través de TiNo",
+            "pl": "Odczytaj bezprzewodowe czujniki odebrane przez TiNo"
+        },
+        "authors": [
+            "bowao <cryolab@web.de>"
+        ],
+        "keywords": [
+            "tiNo",
+            "nurazur",
+            "Funksensor",
+            "Raspberry"
+        ],
+        "license": "MIT",
+        "platform": "Javascript/Node.js",
+        "main": "main.js",
+        "icon": "tino.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/bowao/ioBroker.tino/master/admin/tino.png",
+        "readme": "https://github.com/bowao/ioBroker.tino/blob/master/README.md",
+        "loglevel": "info",
+        "mode": "daemon",
+        "type": "hardware",
+        "compact": true,
+        "messagebox": true,
+        "materialize": true,
+        "materializeTab": true,
+        "dependencies": [
+            {
+                "js-controller": ">=1.4.2"
+            }
+        ]
+    },
+    "native": {
+        "serialport": "",
+        "baudrate": 9600
+    },
+    "objects": [],
+    "instanceObjects": [
+        {
+            "_id": "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.connection",
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "If connected to Serial",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
+        }
+    ]
+}
