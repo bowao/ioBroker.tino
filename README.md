@@ -91,7 +91,7 @@ Folgende Datenpunkte werden angelegt:
 ## Changelog
 
 ### 0.0.2
-- (bowao) Add logo
+- (nurazur) Add logo
 
 ### 0.0.1
 - (bowao) initial release
