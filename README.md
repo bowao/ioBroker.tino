@@ -90,6 +90,9 @@ Folgende Datenpunkte werden angelegt:
 
 ## Changelog
 
+### 0.0.2
+- (bowao) Add logo
+
 ### 0.0.1
 - (bowao) initial release
 

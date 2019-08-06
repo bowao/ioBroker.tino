@@ -371,7 +371,7 @@ function main() {
             dataString = '' + data;
             dataString = dataString.replace(/[\r]/g, '');
             if (/^NodeId/.test(dataString) && dataString.match(/^NodeId,\d+/)[0].substring(7) >= 1 && /data:OK/.test(dataString)) {
-                setNodeState(data);
+                setNodeState(dataString);
             } else {
                 adapter.log.info('Invalid data: ' + data);
             }
