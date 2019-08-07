@@ -13,7 +13,7 @@
 ## TiNo adapter for ioBroker
 (German version see below)
 
-Read wireless sensordata received via TiNo
+Read wireless sensordata received via TiNo Version 1.01
 
 The wireless transceiver and receiver TiNo were developed by nurazur.
 
@@ -53,7 +53,7 @@ The following data points would be created:
 
 ## TiNo adapter für ioBroker
 
-Einlesen der vom TiNo empfangenen Funksensordaten
+Einlesen der vom TiNo Version 1.01 empfangenen Funksensordaten
 
 Der Funksender und -empfänger TiNo wurden von nurazur entwickelt.
 
@@ -89,6 +89,9 @@ Folgende Datenpunkte werden angelegt:
 
 
 ## Changelog
+
+### 0.0.3
+- (bowao) Update readme
 
 ### 0.0.2
 - (nurazur) Add logo
