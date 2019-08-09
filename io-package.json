@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "tino",
-        "version": "0.0.3",
+        "version": "0.0.4",
         "news": {
+            "0.0.4": {
+                "en": "Resize logo"
+            },
             "0.0.3": {
                 "en": "Update readme"
             },

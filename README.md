@@ -90,6 +90,9 @@ Folgende Datenpunkte werden angelegt:
 
 ## Changelog
 
+### 0.0.4
+- (bowao) Resize logo
+
 ### 0.0.3
 - (bowao) Update readme
 
