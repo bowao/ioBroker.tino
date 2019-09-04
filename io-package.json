@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "tino",
-        "version": "0.0.4",
+        "version": "0.0.5",
         "news": {
+            "0.0.5": {
+                "en": "Add datapoints interrupt and heartbeat, set default baudrate to 38400, close serialport on unload and cleanup"
+            },
             "0.0.4": {
                 "en": "Resize logo"
             },
@@ -78,7 +81,7 @@
     },
     "native": {
         "serialport": "",
-        "baudrate": 9600
+        "baudrate": 38400
     },
     "objects": [],
     "instanceObjects": [

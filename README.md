@@ -90,6 +90,11 @@ Folgende Datenpunkte werden angelegt:
 
 ## Changelog
 
+### 0.0.5
+- (bowao) Add datapoints interrupt an heartbeat
+- (bowao) Set default baudrate to 38400
+- (bowao) Close serialport on unload and cleanup
+
 ### 0.0.4
 - (bowao) Resize logo
 

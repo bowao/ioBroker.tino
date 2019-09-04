@@ -9,35 +9,22 @@ let sPort = null;
 let adapter;
 
 function startAdapter(options) {
-     options = options || {};
-     Object.assign(options, {
-          name: 'tino',
+    options = options || {};
+    Object.assign(options, {
+        name: 'tino',
 
-          // is called when adapter shuts down - callback has to be called under any circumstances!
-          unload: function (callback) {
+        // is called when adapter shuts down - callback has to be called under any circumstances!
+        unload: function (callback) {
             try {
-                adapter.log.info('cleaned everything up...');
+                if (sPort.isOpen) {
+                    sPort.close();
+                    adapter.log.info('Serialport: ' + adapter.config.serialport + ' is closed');
+                }
                 adapter.setState('info.connection', false, true);
+                adapter.log.info('cleaned everything up...');
                 callback();
             } catch (e) {
                 callback();
-            }
-        },
-
-        // is called if a subscribed object changes
-        objectChange: function (id, obj) {
-            // Warning, obj can be null if it was deleted
-//            adapter.log.info('objectChange ' + id + ' ' + JSON.stringify(obj));
-        },
-
-        // is called if a subscribed state changes
-        stateChange: function (id, state) {
-            // Warning, state can be null if it was deleted
-//            adapter.log.info('stateChange ' + id + ' ' + JSON.stringify(state));
-
-            // you can use the ack flag to detect if it is status (true) or command (false)
-            if (state && !state.ack) {
-                adapter.log.info('ack is not set!');
             }
         },
 
@@ -245,6 +232,59 @@ function createNode(id, data) {
             native: {}
         });
 
+        adapter.setObjectNotExists('Sensor_' + id + '.heartbeat', {
+            type: 'state',
+            common: {
+                "name": "Heartbeat",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "role": "state",
+                "desc": "Heartbeat"
+            },
+            native: {}
+        });
+
+        adapter.setObjectNotExists('Sensor_' + id + '.interrupt1', {
+            type: 'state',
+            common: {
+                "name": "Interrupt 1",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "role": "state",
+                "desc": "Interrupt 1"
+            },
+            native: {}
+        });
+
+        adapter.setObjectNotExists('Sensor_' + id + '.interrupt2', {
+            type: 'state',
+            common: {
+                "name": "Interrupt 2",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "role": "state",
+                "desc": "Interrupt 2"
+            },
+            native: {}
+        });
+
+        adapter.setObjectNotExists('Sensor_' + id + '.interrupt3', {
+            type: 'state',
+            common: {
+                "name": "Interrupt 3",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "role": "state",
+                "desc": "Interrupt 3"
+            },
+            native: {}
+        });
+
+
 }
 
 function setNodeState(data) {
@@ -258,6 +298,10 @@ function setNodeState(data) {
     let rfm69Temp;
     let counter;
     let biterrors;
+    let heartbeat;
+    let inter1;
+    let inter2;
+    let inter3;
     let outerMessage;
     let innerMessage;
 
@@ -321,38 +365,31 @@ function setNodeState(data) {
         biterrors = parseInt(outerMessage[6].substring(10));
         adapter.setState('Sensor_' + nodeId + '.radioInfo.biterrors', { val: biterrors, ack: true});
 
-    adapter.log.debug('data received for Node Id: ' + nodeId + ' voltage=' + voltage + ' temperature=' + temperature + ' humidity=' + humidity + ' rssi=' + rssi + ' FEI=' + fei + ' RFM69Temp=' + rfm69Temp + ' counter=' + counter + ' biterrors=' + biterrors);
+        heartbeat = ((parseInt(innerMessage[5], 16) & 1) === 1);
+        inter1 = ((parseInt(innerMessage[5], 16) & 2) === 2);
+        inter2 = ((parseInt(innerMessage[5], 16) & 4) === 4);
+        inter3 = ((parseInt(innerMessage[5], 16) & 8) === 8);
+        adapter.setState('Sensor_' + nodeId + '.heartbeat', { val: heartbeat, ack: true});
+        adapter.setState('Sensor_' + nodeId + '.interrupt1', { val: inter1, ack: true});
+        adapter.setState('Sensor_' + nodeId + '.interrupt2', { val: inter2, ack: true});
+        adapter.setState('Sensor_' + nodeId + '.interrupt3', { val: inter3, ack: true});
+
+    adapter.log.debug('data received for Node Id: ' + nodeId + ' voltage=' + voltage + ' temperature=' + temperature + ' humidity=' + humidity + ' rssi=' + rssi + ' FEI=' + fei + ' RFM69Temp=' + rfm69Temp + ' counter=' + counter + ' biterrors=' + biterrors + ' heartbeat=' + heartbeat + ' interrupt1=' + inter1 + ' interrupt2=' + inter2 + ' interrupt3=' + inter3);
+
 }
 
 function main() {
 
+    adapter.setState('info.connection', false, true);
     if (!adapter.config.serialport) {
         adapter.log.warn('Please define the serial port.');
         return;
     }
 
-    if (adapter.config.serialport === 'debug') {
-        let dataString = 'NodeId,15,s=-38.38,data:OK;3217;1;2692;66.76;1;,FEI=-2,T=31,biterrors=0';
-        if (/^NodeId/.test(dataString) && dataString.match(/^NodeId,\d+/)[0].substring(7) >= 1 && /data:OK/.test(dataString)) {
-            setNodeState(dataString);
-        } else {
-            adapter.log.info('Invalid data: ' + dataString);
-        }
-        dataString = 'NodeId,77,s=-106.50,data:FAIL;2402;60;10352;9.00;5E;,FEI=-238,T=31,biterrors=0';
-            if (/^NodeId/.test(dataString) && dataString.match(/^NodeId,\d+/)[0].substring(7) >= 1 && /data:OK/.test(dataString)) {
-                setNodeState(dataString);
-            } else {
-                adapter.log.info('Invalid data: ' + dataString);
-            }
-
-        return;
-    }
-
-
     let bRate = parseInt(adapter.config.baudrate);
     let sPortName = adapter.config.serialport
 
-    const sPort = new SerialPort(sPortName, {baudRate: bRate}, function(err) {
+    sPort = new SerialPort(sPortName, {baudRate: bRate}, function(err) {
         if (err) {
         adapter.log.info('Serialport ' + err);
         return;
@@ -377,8 +414,6 @@ function main() {
             }
         });
     });
-
-    adapter.subscribeStates('*');
 
 }
 
