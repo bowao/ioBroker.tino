@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "tino",
-        "version": "0.0.5",
+        "version": "0.1.0",
         "news": {
+            "0.1.0": {
+                "en": "Add tino protocol V2.0 support, add option to search new data points on already created sensors, add calculated data points humidity_absolute and dew_point"
+            },
             "0.0.5": {
                 "en": "Add datapoints interrupt and heartbeat, set default baudrate to 38400, close serialport on unload and cleanup"
             },
@@ -81,7 +84,8 @@
     },
     "native": {
         "serialport": "",
-        "baudrate": 38400
+        "baudrate": 38400,
+        "newDPonNodes": false
     },
     "objects": [],
     "instanceObjects": [

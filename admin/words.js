@@ -56,5 +56,16 @@ systemDictionary = {
         "it": "!!Attenzione!! Sul RaspberryPi dalla versione 3, l'interfaccia / dev / ttyAMA0 è collegata al modulo Bluetooth.<br>Informazioni aggiuntive: https://www.raspberrypi.org/documentation/configuration/uart.md",
         "es": "!!Atención!! En la RaspberryPi desde la versión 3, la interfaz /dev/ttyAMA0 está conectada al módulo Bluetooth.<br>Información Adicional: https://www.raspberrypi.org/documentation/configuration/uart.md",
         "pl": "!!Uwaga!! W RaspberryPi od wersji 3 interfejs /dev/ttyAMA0 jest podłączony do modułu Bluetooth. Dodatkowe informacje: https://www.raspberrypi.org/documentation/configuration/uart.md"
-}
+    },
+    "newDPonNodes": {
+        "en": "Search new data points on already created sensors",
+        "de": "Suche neue Datenpunkte auf bereits erstellten Sensoren",
+        "ru": "Поиск новых точек данных на уже созданных датчиках",
+        "pt": "Pesquisar novos pontos de dados em sensores já criados",
+        "nl": "Zoek nieuwe datapunten op reeds gemaakte sensoren",
+        "fr": "Recherche de nouveaux points de données sur des capteurs déjà créés",
+        "it": "Cerca nuovi punti dati su sensori già creati",
+        "es": "Buscar nuevos puntos de datos en sensores ya creados",
+        "pl": "Wyszukaj nowe punkty danych na już utworzonych czujnikach"
+    }
 };
