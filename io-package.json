@@ -3,6 +3,9 @@
         "name": "tino",
         "version": "0.1.0",
         "news": {
+            "0.1.1": {
+                "en": "New learning mode with 10min. auto-timeout"
+            },
             "0.1.0": {
                 "en": "Add tino protocol V2.0 support, add option to search new data points on already created sensors, add calculated data points humidity_absolute and dew_point"
             },
@@ -85,7 +88,7 @@
     "native": {
         "serialport": "",
         "baudrate": 38400,
-        "newDPonNodes": false
+        "learningMode": true
     },
     "objects": [],
     "instanceObjects": [
@@ -106,6 +109,19 @@
                 "type": "boolean",
                 "read": true,
                 "write": false,
+                "def": false
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.learningMode",
+            "type": "state",
+            "common": {
+                "role": "indicator",
+                "name": "Learn new nodes and datapoints",
+                "type": "boolean",
+                "read": true,
+                "write": true,
                 "def": false
             },
             "native": {}

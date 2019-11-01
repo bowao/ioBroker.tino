@@ -4,9 +4,11 @@
 const utils = require('@iobroker/adapter-core');
 
 const SerialPort = require('serialport');
-const Readline = require('@serialport/parser-readline')
+const Readline = require('@serialport/parser-readline');
 let sPort = null;
 let adapter;
+let learningMode = true;
+let learnTimeout;
 
 function startAdapter(options) {
     options = options || {};
@@ -16,12 +18,14 @@ function startAdapter(options) {
         // is called when adapter shuts down - callback has to be called under any circumstances!
         unload: function (callback) {
             try {
+                adapter.log.info('cleaned everything up...');
                 if (sPort.isOpen) {
                     sPort.close();
-                    adapter.log.info('Serialport: ' + adapter.config.serialport + ' is closed');
+                    adapter.log.info('Serialport closed: ' + adapter.config.serialport);
                 }
                 adapter.setState('info.connection', false, true);
-                adapter.log.info('cleaned everything up...');
+                clearTimeout(learnTimeout);
+                adapter.log.info('Cleared timeout');
                 callback();
             } catch (e) {
                 callback();
@@ -46,6 +50,22 @@ function startAdapter(options) {
                             }
                         }
                     break;
+                }
+            }
+        },
+
+        // is called if a subscribed state changes
+        stateChange: function (id, state) {
+            // Warning, state can be null if it was deleted
+            let channel = id.split('.');
+            const name = channel.pop();
+            if (name === 'learningMode') {
+                if(state && !state.ack) {
+                    adapter.log.info('Set learning mode to ' + state.val);
+                    learningMode = state.val;
+                    adapter.setState('info.learningMode', state.val, true);
+                    if (state && state.val) learningTimeout();
+                    if (state && !state.val) clearTimeout(learnTimeout);
                 }
             }
         },
@@ -726,73 +746,63 @@ function setNodeState(data) {
 
     nodeId = parseInt(outerMessage[1]);
 
-    adapter.getObject('Sensor_' + nodeId, function (err, obj) {
+    if(learningMode == true) {
+        adapter.log.info('Learning v1 node with id: ' + nodeId);
+        createNode(nodeId, data);
+    }
+
+    voltage = parseInt(innerMessage[1]) / 1000;
+    adapter.setState('Sensor_' + nodeId + '.battery', { val: voltage, ack: true});
+
+    temperature = parseInt(innerMessage[3]) / 100;
+    adapter.getState('Sensor_' + nodeId + '.config.offsetTemperature', function (err, state) {
         if(err) {
             adapter.log.info(err);
         } else {
-            if(!obj){
-                adapter.log.info('Create new Sensor: ' + nodeId);
-                createNode(nodeId, data);
+            if(state){
+                temperature = temperature + state.val;
+                adapter.setState('Sensor_' + nodeId + '.config.offsetTemperature', { val: state.val, ack: true});
             }
-            if(adapter.config.newDPonNodes === true) {
-                adapter.log.info('Search for new Datapoints on already created sensor: ' + nodeId);
-                createNode(nodeId, data);
-            }
+            adapter.setState('Sensor_' + nodeId + '.temperature', { val: temperature, ack: true});
         }
     });
 
-        voltage = parseInt(innerMessage[1]) / 1000;
-        adapter.setState('Sensor_' + nodeId + '.battery', { val: voltage, ack: true});
-
-        temperature = parseInt(innerMessage[3]) / 100;
-        adapter.getState('Sensor_' + nodeId + '.config.offsetTemperature', function (err, state) {
-            if(err) {
-                adapter.log.info(err);
-            } else {
-                if(state){
-                    temperature = temperature + state.val;
-                    adapter.setState('Sensor_' + nodeId + '.config.offsetTemperature', { val: state.val, ack: true});
-                }
-                adapter.setState('Sensor_' + nodeId + '.temperature', { val: temperature, ack: true});
+    humidity = parseFloat(innerMessage[4]);
+    adapter.getState('Sensor_' + nodeId + '.config.offsetHumidity', function (err, state) {
+        if(err) {
+            adapter.log.info(err);
+        } else {
+            if(state){
+                humidity = humidity + state.val;
+                adapter.setState('Sensor_' + nodeId + '.config.offsetHumidity', { val: state.val, ack: true});
             }
-        });
+            adapter.setState('Sensor_' + nodeId + '.humidity', { val: humidity, ack: true});
+        }
+    });
 
-        humidity = parseFloat(innerMessage[4]);
-        adapter.getState('Sensor_' + nodeId + '.config.offsetHumidity', function (err, state) {
-            if(err) {
-                adapter.log.info(err);
-            } else {
-                if(state){
-                    humidity = humidity + state.val;
-                    adapter.setState('Sensor_' + nodeId + '.config.offsetHumidity', { val: state.val, ack: true});
-                }
-                adapter.setState('Sensor_' + nodeId + '.humidity', { val: humidity, ack: true});
-            }
-        });
+    rssi = parseFloat(outerMessage[2].substring(2));
+    adapter.setState('Sensor_' + nodeId + '.radioInfo.rssi', { val: rssi, ack: true});
 
-        rssi = parseFloat(outerMessage[2].substring(2));
-        adapter.setState('Sensor_' + nodeId + '.radioInfo.rssi', { val: rssi, ack: true});
+    fei = parseInt(outerMessage[4].substring(4));
+    adapter.setState('Sensor_' + nodeId + '.radioInfo.fei', { val: fei, ack: true});
 
-        fei = parseInt(outerMessage[4].substring(4));
-        adapter.setState('Sensor_' + nodeId + '.radioInfo.fei', { val: fei, ack: true});
+    rfm69Temp = parseInt(outerMessage[5].substring(2));
+    adapter.setState('Sensor_' + nodeId + '.radioInfo.rfm69Temperature', { val: rfm69Temp, ack: true});
 
-        rfm69Temp = parseInt(outerMessage[5].substring(2));
-        adapter.setState('Sensor_' + nodeId + '.radioInfo.rfm69Temperature', { val: rfm69Temp, ack: true});
+    counter = parseInt(innerMessage[2]);
+    adapter.setState('Sensor_' + nodeId + '.radioInfo.counter', { val: counter, ack: true});
 
-        counter = parseInt(innerMessage[2]);
-        adapter.setState('Sensor_' + nodeId + '.radioInfo.counter', { val: counter, ack: true});
+    bitErrors = parseInt(outerMessage[6].substring(10));
+    adapter.setState('Sensor_' + nodeId + '.radioInfo.bitErrors', { val: bitErrors, ack: true});
 
-        bitErrors = parseInt(outerMessage[6].substring(10));
-        adapter.setState('Sensor_' + nodeId + '.radioInfo.bitErrors', { val: bitErrors, ack: true});
-
-        heartbeat = ((parseInt(innerMessage[5], 16) & 1) === 1);
-        inter1 = ((parseInt(innerMessage[5], 16) & 2) === 2);
-        inter2 = ((parseInt(innerMessage[5], 16) & 4) === 4);
-        inter3 = ((parseInt(innerMessage[5], 16) & 8) === 8);
-        adapter.setState('Sensor_' + nodeId + '.flags.heartbeat', { val: heartbeat, ack: true});
-        adapter.setState('Sensor_' + nodeId + '.flags.interrupt1', { val: inter1, ack: true});
-        adapter.setState('Sensor_' + nodeId + '.flags.interrupt2', { val: inter2, ack: true});
-        adapter.setState('Sensor_' + nodeId + '.flags.interrupt3', { val: inter3, ack: true});
+    heartbeat = ((parseInt(innerMessage[5], 16) & 1) === 1);
+    inter1 = ((parseInt(innerMessage[5], 16) & 2) === 2);
+    inter2 = ((parseInt(innerMessage[5], 16) & 4) === 4);
+    inter3 = ((parseInt(innerMessage[5], 16) & 8) === 8);
+    adapter.setState('Sensor_' + nodeId + '.flags.heartbeat', { val: heartbeat, ack: true});
+    adapter.setState('Sensor_' + nodeId + '.flags.interrupt1', { val: inter1, ack: true});
+    adapter.setState('Sensor_' + nodeId + '.flags.interrupt2', { val: inter2, ack: true});
+    adapter.setState('Sensor_' + nodeId + '.flags.interrupt3', { val: inter3, ack: true});
 
     if (humidity != undefined && humidity != "" && humidity != 0 && temperature != undefined && temperature != "" && temperature != 0) {
         setTimeout(function() {
@@ -850,20 +860,10 @@ function setNodeStateV2(data) {
 
     nodeId = data.split(' ')[0];
 
-    adapter.getObject('Sensor_' + nodeId, function (err, obj) {
-        if(err) {
-            adapter.log.info(err);
-        } else {
-            if(!obj){
-                adapter.log.info('Create new Sensor: ' + nodeId);
-                createNode(nodeId, data);
-            }
-            if(adapter.config.newDPonNodes === true) {
-                adapter.log.info('Search for new Datapoints on already created sensor: ' + nodeId);
-                createNode(nodeId, data);
-            }
-        }
-    });
+    if(learningMode == true) {        
+        adapter.log.info('Learning v2 node with id: ' + nodeId);
+        createNode(nodeId, data);
+    }
 
     if (/v=[0-9]+/.test(data)) {
         voltage = parseInt((data.match(/v=[0-9]+/)[0].substring(2))) / 1000;
@@ -1035,6 +1035,16 @@ function setNodeStateV2(data) {
     adapter.log.debug('data received for Node Id: ' + nodeId + ' rssi=' + rssi + ' FrequencyOffset=' + freqOffset + ' linkQuality=' + linkQuali + ' counter=' + counter + ' biterrors=' + bitErrors + ' sync=' + sync + ' intr1=' + intr1 + ' intr2=' + intr2 + ' intr3=' + intr3 + ' intr4=' + intr4 + ' intr5=' + intr5 + ' intr6=' + intr6 + ' intr7=' + intr7 + ' intr8=' + intr8);
 }
 
+function learningTimeout() {
+    learnTimeout = setTimeout(learningOff, 600000);
+}
+
+function learningOff() {
+    adapter.setState('info.learningMode', false, true)
+    learningMode = false;
+    adapter.log.info('learning mode disabled');
+}
+
 function main() {
 
     adapter.setState('info.connection', false, true);
@@ -1042,6 +1052,16 @@ function main() {
         adapter.log.warn('Please define the serial port.');
         return;
     }
+
+    adapter.getState('info.learningMode', function (err, state) {
+        if(err) {
+            adapter.log.info('Error: ' + err);
+        } else {
+            learningMode = state.val;
+            if(state && state.val) learningTimeout();
+            adapter.log.info('Learning mode is ' + learningMode);
+        }
+    });
 
     let bRate = parseInt(adapter.config.baudrate);
     let sPortName = adapter.config.serialport
@@ -1073,6 +1093,8 @@ function main() {
             }
         });
     });
+
+    adapter.subscribeStates('info.learningMode');
 
 }
 

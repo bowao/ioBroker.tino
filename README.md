@@ -35,9 +35,10 @@ Github: https://github.com/nurazur/TiNo
 
 Sensors can be almost any, like temperature, relative humidity, air pressure, altitude meter, light intensity, UV Index, movement detectors, Reed switches, etc.
 
-In the adapter configuration, the serial interface and the associated baud rate can be set. In addition it is possible to search in already created sensors for new or accidentally deleted data points without having to create the entire sensor again.
-The sensors are automatically created with their node-id after the first message reception. 
-In addition, the associated offset data points are created under "config", so that the sensor values can be corrected if necessary.
+In the adapter configuration, the serial interface and the associated baud rate can be set.
+When the learning mode has been activated, the sensors are automatically created with their node-id and all recognized data points after the first message reception.
+The learning mode ends automatically after 10 minutes and can be reactivated for another 10 minutes under "info" via datapoint "learningMode".
+The associated offset data points are created under "config", so that the sensor values can be corrected if necessary.
 The calculated data points humidity absolute and dew point are created under "calculated", but only if the sensor supplies the values temperature and relative humidity.
 
 The following data points would be created for receiver protocol Version 1.01:
@@ -91,9 +92,10 @@ Github: https://github.com/nurazur/TiNo
 
 Als Sensor kann man so ziemlich alles verwenden, ob Temperatur, Luftfeuchtigkeit, Luftdruck, Höhenmesser, Lichtintensität, UV Index, Anwesenheitssensoren, Magnetschalter, Erschütterungs-Sensoren, Feuchtigkeitsmesser usw also im Prinzip alle Arten von Sensoren.
 
-In der Adapter Konfiguration lässt sich die Serielle Schnittstelle und die zugehörige Baudrate einstellen. Außerdem besteht die möglichkeit für bereits erstellte Sensoren nach neuen oder versehentlich gelöschten Datenpunkte zu suchen ohne das der komplette Sensor neu angelegt werden muss.
-Die Sensoren werden nach dem ersten Nachrichten-Empfang automatisch mit ihrer Node-Id angelegt.
-Zusätzlich werden unter "config" die zugehörigen offset Datenpunkte erstellt, damit die Sensorwerte bei Bedarf korrigiert werden können.
+In der Adapter Konfiguration lässt sich die Serielle Schnittstelle und die zugehörige Baudrate einstellen.
+Wenn der Anlermodus aktiviert ist, werden die Sensoren nach dem ersten Nachrichten-Empfang automatisch mit ihrer Node-Id und allen erkannten Datenpunkten angelegt.
+Der Anlernmodus wird nach 10min. automatisch beendet und kann unter "info" über den Datenpunkt "learningMode" für weitere 10min. erneut aktiviert werden.
+Unter "config" werden die zugehörigen offset Datenpunkte erstellt, damit die Sensorwerte bei Bedarf korrigiert werden können.
 Unter "calculated" werden die erechneten Datenpunkte Feuchte absolut und Taupunkt angelegt, jedoch nur wenn der Sensor die Werte Temperatur und relative Feuchte liefert.
 
 Folgende Datenpunkte werden für das Empfänger-Protokoll Version 1.01 angelegt:
@@ -123,6 +125,9 @@ zusätzlich werden für das Empfänger-Protokoll Version 2.0 folgende Datenpunkt
 
 
 ## Changelog
+### 0.1.1
+- (bowao) New learning mode with 10min. auto-timeout
+
 ### 0.1.0
 - (bowao) Add tino protocol V2.0 support
 - (bowao) Add option to search new data points on already created sensors
