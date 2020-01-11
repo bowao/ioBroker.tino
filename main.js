@@ -1057,8 +1057,13 @@ function main() {
         if(err) {
             adapter.log.info('Error: ' + err);
         } else {
-            learningMode = state.val;
-            if(state && state.val) learningTimeout();
+            if(!state) {
+                adapter.setState('info.learningMode', true, true)
+                learningMode = true;
+            } else {
+                learningMode = state.val;
+            }
+            if(learningMode) learningTimeout();
             adapter.log.info('Learning mode is ' + learningMode);
         }
     });
