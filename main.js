@@ -9,6 +9,8 @@ let sPort = null;
 let adapter;
 let learningMode = true;
 let learnTimeout;
+let calcTimeoutV1;
+let calcTimeoutV2;
 
 function startAdapter(options) {
     options = options || {};
@@ -25,6 +27,8 @@ function startAdapter(options) {
                 }
                 adapter.setState('info.connection', false, true);
                 clearTimeout(learnTimeout);
+                clearTimeout(calcTimeoutV1);
+                clearTimeout(calcTimeoutV2);
                 adapter.log.info('Cleared timeout');
                 callback();
             } catch (e) {
@@ -40,13 +44,13 @@ function startAdapter(options) {
                         if (obj.callback) {
                             if (SerialPort) {
                                 // read all found serial ports
-                                SerialPort.list((err, ports) => {
+                                SerialPort.list().then((ports) => {
                                     adapter.log.info('List of port: ' + JSON.stringify(ports));
                                     adapter.sendTo(obj.from, obj.command, ports, obj.callback);
                                 });
                             } else {
                                 adapter.log.warn('Module serialport is not available');
-                                adapter.sendTo(obj.from, obj.command, [{comName: 'Not available'}], obj.callback);
+                                adapter.sendTo(obj.from, obj.command, [{path: 'Not available'}], obj.callback);
                             }
                         }
                     break;
@@ -805,7 +809,7 @@ function setNodeState(data) {
     adapter.setState('Sensor_' + nodeId + '.flags.interrupt3', { val: inter3, ack: true});
 
     if (humidity != undefined && humidity != "" && humidity != 0 && temperature != undefined && temperature != "" && temperature != 0) {
-        setTimeout(function() {
+        calcTimeoutV1 = setTimeout(function() {
             adapter.getState('Sensor_' + nodeId + '.temperature', function (err, stateTemp) {
                 adapter.getState('Sensor_' + nodeId + '.humidity', function (err, stateHum) {
                     if(err) {
@@ -823,7 +827,7 @@ function setNodeState(data) {
                     }
                 });
             });
-        }, 100);
+        }, 500);
     }
 
     adapter.log.debug('data received for Node Id: ' + nodeId + ' voltage=' + voltage + ' temperature=' + temperature + ' humidity=' + humidity + ' rssi=' + rssi + ' FEI=' + fei + ' RFM69Temp=' + rfm69Temp + ' counter=' + counter + ' biterrors=' + bitErrors + ' heartbeat=' + heartbeat + ' interrupt1=' + inter1 + ' interrupt2=' + inter2 + ' interrupt3=' + inter3);
@@ -856,11 +860,11 @@ function setNodeStateV2(data) {
     let sync;
     let humAbs;
     let vCalc;
-    let dewPoint;    
+    let dewPoint;
 
     nodeId = data.split(' ')[0];
 
-    if(learningMode == true) {        
+    if(learningMode == true) {
         adapter.log.info('Learning v2 node with id: ' + nodeId);
         createNode(nodeId, data);
     }
@@ -1010,7 +1014,7 @@ function setNodeStateV2(data) {
 
 
     if (/t=[0-9]+/.test(data) && /h=[0-9]+/.test(data)) {
-        setTimeout(function() {
+        calcTimeoutV2 = setTimeout(function() {
             adapter.getState('Sensor_' + nodeId + '.temperature', function (err, stateTemp) {
                 adapter.getState('Sensor_' + nodeId + '.humidity', function (err, stateHum) {
                     if(err) {
@@ -1028,7 +1032,7 @@ function setNodeStateV2(data) {
                     }
                 });
             });
-        }, 100);
+        }, 500);
     }
 
     adapter.log.debug('data received for Node Id: ' + nodeId + ' voltage=' + voltage + ' temperature=' + temperature + ' humidity=' + humidity + ' pressure=' + pressure + ' height=' + height + ' distance=' + distance + ' contact=' + contact);
@@ -1110,5 +1114,5 @@ if (module && module.parent) {
 } else {
     // or start the instance directly
     startAdapter();
-} 
+}
 
