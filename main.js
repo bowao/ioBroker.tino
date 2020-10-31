@@ -485,7 +485,7 @@ function createNode(id, data) {
         });
     }
 
-    if(/int=[0-9,a-f]+/.test(data)) {
+    if(/int=0/.test(data)) {
         adapter.setObjectNotExists('Sensor_' + id + '.interrupts.interrupt1', {
             type: 'state',
             common: {
@@ -849,6 +849,7 @@ function setNodeStateV2(data) {
     let linkQuali;
     let counter;
     let bitErrors;
+    let intrBin = "0000000000000000";
     let intr1;
     let intr2;
     let intr3;
@@ -983,8 +984,10 @@ function setNodeStateV2(data) {
         adapter.setState('Sensor_' + nodeId + '.radioInfo.counter', { val: counter, ack: true});
     }
 
-    if (/int=[0-9,a-f]+/.test(data)) {
-        let intrBin = ("0000000000000000" + (parseInt((data.match(/int=[0-9,a-f]+/)[0].substring(4)),16)).toString(2)).substr(-16);
+    if (/int=0/.test(data)) {
+        if (/int=0x[0-9,a-f]+/.test(data)) {
+            intrBin = (intrBin + (parseInt((data.match(/int=0x[0-9,a-f]+/)[0].substring(6)),16)).toString(2)).substr(-16);
+        }
         intr1 = parseInt((intrBin.substring(14, 16)), 2);
         intr2 = parseInt((intrBin.substring(12, 14)), 2);
         intr3 = parseInt((intrBin.substring(10, 12)), 2);
