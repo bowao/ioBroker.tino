@@ -875,8 +875,8 @@ function setNodeStateV2(data) {
         adapter.setState('Sensor_' + nodeId + '.battery', { val: voltage, ack: true});
     }
 
-    if (/t=[0-9]+/.test(data)) {
-        temperature = parseInt((data.match(/t=[0-9]+/)[0].substring(2))) / 100;
+    if (/t=[-]?[0-9]+/.test(data)) {
+        temperature = parseInt((data.match(/t=[-]?[0-9]+/)[0].substring(2))) / 100;
         adapter.getState('Sensor_' + nodeId + '.config.offsetTemperature', function (err, state) {
             if(err) {
                 adapter.log.info(err);
