@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "tino",
-        "version": "1.0.1",
+        "version": "1.0.2",
         "news": {
+           "1.0.2": {
+                "en": "Fix for negative temperature values"
+            },
            "1.0.1": {
                 "en": "fix bug in interrupt detection for protocol V2"
             },

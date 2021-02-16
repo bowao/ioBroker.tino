@@ -116,7 +116,7 @@ function createNode(id, data) {
         });
     }
 
-    if(/t=[0-9]+/.test(data) || /^NodeId/.test(data)) {
+    if(/t=[-]?[0-9]+/.test(data) || /^NodeId/.test(data)) {
         adapter.setObjectNotExists('Sensor_' + id + '.temperature', {
             type: 'state',
             common: {
@@ -686,7 +686,7 @@ function createNode(id, data) {
         });
     }
 
-    if ((/t=[0-9]+/.test(data) && /h=[0-9]+/.test(data)) || /^NodeId/.test(data)) {
+    if ((/t=[-]?[0-9]+/.test(data) && /h=[0-9]+/.test(data)) || /^NodeId/.test(data)) {
         adapter.setObjectNotExists('Sensor_' + id + '.calculated.humidity_absolute', {
             type: 'state',
             common: {
@@ -704,7 +704,7 @@ function createNode(id, data) {
         });
     }
 
-    if ((/t=[0-9]+/.test(data) && /h=[0-9]+/.test(data)) || /^NodeId/.test(data)) {
+    if ((/t=[-]?[0-9]+/.test(data) && /h=[0-9]+/.test(data)) || /^NodeId/.test(data)) {
         adapter.setObjectNotExists('Sensor_' + id + '.calculated.dew_point', {
             type: 'state',
             common: {
@@ -1016,7 +1016,7 @@ function setNodeStateV2(data) {
     }
 
 
-    if (/t=[0-9]+/.test(data) && /h=[0-9]+/.test(data)) {
+    if (/t=[-]?[0-9]+/.test(data) && /h=[0-9]+/.test(data)) {
         calcTimeoutV2 = setTimeout(function() {
             adapter.getState('Sensor_' + nodeId + '.temperature', function (err, stateTemp) {
                 adapter.getState('Sensor_' + nodeId + '.humidity', function (err, stateHum) {
