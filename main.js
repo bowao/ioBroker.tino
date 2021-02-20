@@ -11,6 +11,7 @@ let learningMode = true;
 let learnTimeout;
 let calcTimeoutV1;
 let calcTimeoutV2;
+let interruptTimeout;
 
 function startAdapter(options) {
     options = options || {};
@@ -29,6 +30,7 @@ function startAdapter(options) {
                 clearTimeout(learnTimeout);
                 clearTimeout(calcTimeoutV1);
                 clearTimeout(calcTimeoutV2);
+                clearTimeout(interruptTimeout);
                 adapter.log.info('Cleared timeout');
                 callback();
             } catch (e) {
@@ -485,7 +487,7 @@ function createNode(id, data) {
         });
     }
 
-    if(/int=0/.test(data)) {
+    if(/int=0x/.test(data)) {
         adapter.setObjectNotExists('Sensor_' + id + '.interrupts.interrupt1', {
             type: 'state',
             common: {
@@ -984,26 +986,13 @@ function setNodeStateV2(data) {
         adapter.setState('Sensor_' + nodeId + '.radioInfo.counter', { val: counter, ack: true});
     }
 
-    if (/int=0/.test(data)) {
-        if (/int=0x[0-9,a-f]+/.test(data)) {
-            intrBin = (intrBin + (parseInt((data.match(/int=0x[0-9,a-f]+/)[0].substring(6)),16)).toString(2)).substr(-16);
-        }
-        intr1 = parseInt((intrBin.substring(14, 16)), 2);
-        intr2 = parseInt((intrBin.substring(12, 14)), 2);
-        intr3 = parseInt((intrBin.substring(10, 12)), 2);
-        intr4 = parseInt((intrBin.substring(8, 10)), 2);
-        intr5 = parseInt((intrBin.substring(6, 8)), 2);
-        intr6 = parseInt((intrBin.substring(4, 6)), 2);
-        intr7 = parseInt((intrBin.substring(2, 4)), 2);
-        intr8 = parseInt((intrBin.substring(0, 2)), 2);
-        adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt1', { val: intr1, ack: true});
-        adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt2', { val: intr2, ack: true});
-        adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt3', { val: intr3, ack: true});
-        adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt4', { val: intr4, ack: true});
-        adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt5', { val: intr5, ack: true});
-        adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt6', { val: intr6, ack: true});
-        adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt7', { val: intr7, ack: true});
-        adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt8', { val: intr8, ack: true});
+    if (/int=0x[0-9,a-f]+/.test(data)) {
+        intrBin = (intrBin + (parseInt((data.match(/int=0x[0-9,a-f]+/)[0].substring(6)),16)).toString(2)).substr(-16);
+
+        setInterrupt(nodeId, intrBin);
+        interruptTimeout = setTimeout(function() {
+            setInterrupt(nodeId, "0000000000000000");
+        },2000);
     }
 
     if (/sy=[0-9]/.test(data)) {
@@ -1040,6 +1029,27 @@ function setNodeStateV2(data) {
 
     adapter.log.debug('data received for Node Id: ' + nodeId + ' voltage=' + voltage + ' temperature=' + temperature + ' humidity=' + humidity + ' pressure=' + pressure + ' height=' + height + ' distance=' + distance + ' contact=' + contact);
     adapter.log.debug('data received for Node Id: ' + nodeId + ' rssi=' + rssi + ' FrequencyOffset=' + freqOffset + ' linkQuality=' + linkQuali + ' counter=' + counter + ' biterrors=' + bitErrors + ' sync=' + sync + ' intr1=' + intr1 + ' intr2=' + intr2 + ' intr3=' + intr3 + ' intr4=' + intr4 + ' intr5=' + intr5 + ' intr6=' + intr6 + ' intr7=' + intr7 + ' intr8=' + intr8);
+}
+
+function setInterrupt(nodeId, intrBin) {
+
+    let intr1 = parseInt((intrBin.substring(14, 16)), 2);
+    let intr2 = parseInt((intrBin.substring(12, 14)), 2);
+    let intr3 = parseInt((intrBin.substring(10, 12)), 2);
+    let intr4 = parseInt((intrBin.substring(8, 10)), 2);
+    let intr5 = parseInt((intrBin.substring(6, 8)), 2);
+    let intr6 = parseInt((intrBin.substring(4, 6)), 2);
+    let intr7 = parseInt((intrBin.substring(2, 4)), 2);
+    let intr8 = parseInt((intrBin.substring(0, 2)), 2);
+    adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt1', { val: intr1, ack: true});
+    adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt2', { val: intr2, ack: true});
+    adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt3', { val: intr3, ack: true});
+    adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt4', { val: intr4, ack: true});
+    adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt5', { val: intr5, ack: true});
+    adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt6', { val: intr6, ack: true});
+    adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt7', { val: intr7, ack: true});
+    adapter.setState('Sensor_' + nodeId + '.interrupts.interrupt8', { val: intr8, ack: true});
+
 }
 
 function learningTimeout() {

@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "tino",
-        "version": "1.0.2",
+        "version": "1.0.3",
         "news": {
+           "1.0.3": {
+                "en": "Displays the interrupt value only for short time"
+            },
            "1.0.2": {
                 "en": "Fix for negative temperature values"
             },
