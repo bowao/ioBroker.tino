@@ -8,7 +8,7 @@
 
 [![NPM](https://nodei.co/npm/iobroker.tino.png?downloads=true)](https://nodei.co/npm/iobroker.tino/)
 
-**Tests:**: [![Travis-CI](http://img.shields.io/travis/bowao/ioBroker.tino/master.svg)](https://travis-ci.org/bowao/ioBroker.tino)
+**Tests:**: [![Travis-CI](https://img.shields.io/travis/com/bowao/ioBroker.tino/master)](https://travis-ci.com/bowao/ioBroker.tino)
 
 ## TiNo adapter for ioBroker
 (German version see below)
