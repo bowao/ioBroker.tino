@@ -126,7 +126,7 @@ function createNode(id, data) {
                 "type": "number",
                 "unit": "°C",
                 "min": -40,
-                "max": 90,
+                "max": 600,
                 "read": true,
                 "write": false,
                 "role": "value.temperature",
@@ -147,6 +147,74 @@ function createNode(id, data) {
                 "write": true,
                 "role": "level.offset",
                 "desc": "Offset Temperature"
+            },
+            native: {}
+        });
+    }
+
+    if(/t1=[-]?[0-9]+/.test(data) || /^NodeId/.test(data)) {
+        adapter.setObjectNotExists('Sensor_' + id + '.temperature_1', {
+            type: 'state',
+            common: {
+                "name": "Temperature_1",
+                "type": "number",
+                "unit": "°C",
+                "min": -40,
+                "max": 90,
+                "read": true,
+                "write": false,
+                "role": "value.temperature",
+                "desc": "Temperature_1"
+            },
+            native: {}
+        });
+
+        adapter.setObjectNotExists('Sensor_' + id + '.config.offsetTemperature_1', {
+            type: 'state',
+            common: {
+                "name": "Offset Temperature_1",
+                "type": "number",
+                "unit": "K",
+                "min": -10,
+                "max": 10,
+                "read": true,
+                "write": true,
+                "role": "level.offset",
+                "desc": "Offset Temperature_1"
+            },
+            native: {}
+        });
+    }
+
+    if(/t2=[-]?[0-9]+/.test(data) || /^NodeId/.test(data)) {
+        adapter.setObjectNotExists('Sensor_' + id + '.temperature_2', {
+            type: 'state',
+            common: {
+                "name": "Temperature_2",
+                "type": "number",
+                "unit": "°C",
+                "min": -40,
+                "max": 90,
+                "read": true,
+                "write": false,
+                "role": "value.temperature",
+                "desc": "Temperature_2"
+            },
+            native: {}
+        });
+
+        adapter.setObjectNotExists('Sensor_' + id + '.config.offsetTemperature_2', {
+            type: 'state',
+            common: {
+                "name": "Offset Temperature_2",
+                "type": "number",
+                "unit": "K",
+                "min": -10,
+                "max": 10,
+                "read": true,
+                "write": true,
+                "role": "level.offset",
+                "desc": "Offset Temperature_2"
             },
             native: {}
         });
@@ -841,6 +909,8 @@ function setNodeStateV2(data) {
     let nodeId;
     let voltage;
     let temperature;
+    let temperature1;
+    let temperature2;
     let humidity;
     let pressure;
     let height;
@@ -888,6 +958,36 @@ function setNodeStateV2(data) {
                     adapter.setState('Sensor_' + nodeId + '.config.offsetTemperature', { val: state.val, ack: true});
                 }
                 adapter.setState('Sensor_' + nodeId + '.temperature', { val: temperature, ack: true});
+            }
+        });
+    }
+
+    if (/t1=[-]?[0-9]+/.test(data)) {
+        temperature1 = parseInt((data.match(/t1=[-]?[0-9]+/)[0].substring(3))) / 100;
+        adapter.getState('Sensor_' + nodeId + '.config.offsetTemperature_1', function (err, state) {
+            if(err) {
+                adapter.log.info(err);
+            } else {
+                if(state){
+                    temperature1 = temperature1 + state.val;
+                    adapter.setState('Sensor_' + nodeId + '.config.offsetTemperature_1', { val: state.val, ack: true});
+                }
+                adapter.setState('Sensor_' + nodeId + '.temperature_1', { val: temperature1, ack: true});
+            }
+        });
+    }
+
+    if (/t2=[-]?[0-9]+/.test(data)) {
+        temperature2 = parseInt((data.match(/t2=[-]?[0-9]+/)[0].substring(3))) / 100;
+        adapter.getState('Sensor_' + nodeId + '.config.offsetTemperature_2', function (err, state) {
+            if(err) {
+                adapter.log.info(err);
+            } else {
+                if(state){
+                    temperature2 = temperature2 + state.val;
+                    adapter.setState('Sensor_' + nodeId + '.config.offsetTemperature_2', { val: state.val, ack: true});
+                }
+                adapter.setState('Sensor_' + nodeId + '.temperature_2', { val: temperature2, ack: true});
             }
         });
     }

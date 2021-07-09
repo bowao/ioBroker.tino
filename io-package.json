@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "tino",
-        "version": "1.0.3",
+        "version": "1.1.0",
         "news": {
+           "1.1.0": {
+                "en": "Add tino protocol V2.2 support"
+            },
            "1.0.3": {
                 "en": "Displays the interrupt value only for short time"
             },
@@ -94,6 +97,8 @@
         "mode": "daemon",
         "type": "hardware",
         "compact": true,
+        "connectionType": "local",
+        "dataSource": "push",
         "messagebox": true,
         "materialize": true,
         "materializeTab": true,
