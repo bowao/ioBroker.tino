@@ -1,24 +1,27 @@
 {
     "common": {
         "name": "tino",
-        "version": "1.1.0",
+        "version": "1.1.1",
         "news": {
-           "1.1.0": {
+            "1.1.1": {
+                "en": "Optimization for js-controller 3.3"
+            },
+            "1.1.0": {
                 "en": "Add tino protocol V2.2 support"
             },
-           "1.0.3": {
+            "1.0.3": {
                 "en": "Displays the interrupt value only for short time"
             },
-           "1.0.2": {
+            "1.0.2": {
                 "en": "Fix for negative temperature values"
             },
-           "1.0.1": {
+            "1.0.1": {
                 "en": "fix bug in interrupt detection for protocol V2"
             },
-           "1.0.0": {
+            "1.0.0": {
                 "en": "Update dependencies, Drop node 8 support"
             },
-           "0.1.3": {
+            "0.1.3": {
                 "en": "Update travis.yml, License, Readme"
             },
             "0.1.2": {

@@ -367,8 +367,8 @@ function createNode(id, data) {
                 "role": "sensor.window",
                 "desc": "Door/Window Contact",
                 "states": {
-                0: 'open',
-                1: 'close'
+                false: 'open',
+                true: 'close'
                 }
             },
             native: {}
@@ -794,6 +794,28 @@ function createNode(id, data) {
 
 }
 
+function nodeSet(data, version) {
+
+    let nodeId = data.split(' ')[0];
+    adapter.getObject('Sensor_' + nodeId , function (err, obj) {
+        if(err) {
+            adapter.log.error(err);
+        } else {
+            if(obj === null && learningMode === false) {
+                adapter.log.info('Learning Mode is off. Ignore new Node id: ' + nodeId);
+            } else {
+                createNode(nodeId, data);
+                if(version === 1) {
+                    setNodeState(data);
+                }
+                if(version === 2) {
+                    setNodeStateV2(data);
+                }
+            }
+        }
+    });
+}
+
 function setNodeState(data) {
 
     let nodeId;
@@ -834,7 +856,7 @@ function setNodeState(data) {
             adapter.log.info(err);
         } else {
             if(state){
-                temperature = temperature + state.val;
+                temperature = Math.round( (temperature + state.val) * 1e2 ) / 1e2;
                 adapter.setState('Sensor_' + nodeId + '.config.offsetTemperature', { val: state.val, ack: true});
             }
             adapter.setState('Sensor_' + nodeId + '.temperature', { val: temperature, ack: true});
@@ -847,7 +869,7 @@ function setNodeState(data) {
             adapter.log.info(err);
         } else {
             if(state){
-                humidity = humidity + state.val;
+                humidity = Math.round( (humidity + state.val) * 1e2 ) / 1e2;
                 adapter.setState('Sensor_' + nodeId + '.config.offsetHumidity', { val: state.val, ack: true});
             }
             adapter.setState('Sensor_' + nodeId + '.humidity', { val: humidity, ack: true});
@@ -870,13 +892,36 @@ function setNodeState(data) {
     adapter.setState('Sensor_' + nodeId + '.radioInfo.bitErrors', { val: bitErrors, ack: true});
 
     heartbeat = ((parseInt(innerMessage[5], 16) & 1) === 1);
-    inter1 = ((parseInt(innerMessage[5], 16) & 2) === 2);
-    inter2 = ((parseInt(innerMessage[5], 16) & 4) === 4);
-    inter3 = ((parseInt(innerMessage[5], 16) & 8) === 8);
+    if(heartbeat === 0 || heartbeat === 1){
+    heartbeat = Boolean(heartbeat);
     adapter.setState('Sensor_' + nodeId + '.flags.heartbeat', { val: heartbeat, ack: true});
+    } else {
+        adapter.log.warn('Wrong Heartbeat flag state received: Sensor_' + nodeId + '.flags.heartbeat : ' + heartbeat);
+    }
+
+    inter1 = ((parseInt(innerMessage[5], 16) & 2) === 2);
+    if(inter1 === 0 || inter1 === 1){
+    inter1 = Boolean(inter1);
     adapter.setState('Sensor_' + nodeId + '.flags.interrupt1', { val: inter1, ack: true});
+    } else {
+        adapter.log.warn('Wrong Interrupt_1 state received: Sensor_' + nodeId + '.flags.interrupt1 : ' + inter1);
+    }
+
+    inter2 = ((parseInt(innerMessage[5], 16) & 4) === 4);
+    if(inter2 === 0 || inter2 === 1){
+    inter2 = Boolean(inter2);
     adapter.setState('Sensor_' + nodeId + '.flags.interrupt2', { val: inter2, ack: true});
+    } else {
+        adapter.log.warn('Wrong Interrupt_2 state received: Sensor_' + nodeId + '.flags.interrupt2 : ' + inter2);
+    }
+
+    inter3 = ((parseInt(innerMessage[5], 16) & 8) === 8);
+    if(inter3 === 0 || inter3 === 1){
+    inter3 = Boolean(inter3);
     adapter.setState('Sensor_' + nodeId + '.flags.interrupt3', { val: inter3, ack: true});
+    } else {
+        adapter.log.warn('Wrong Interrupt_3 state received: Sensor_' + nodeId + '.flags.interrupt3 : ' + inter3);
+    }
 
     if (humidity != undefined && humidity != "" && humidity != 0 && temperature != undefined && temperature != "" && temperature != 0) {
         calcTimeoutV1 = setTimeout(function() {
@@ -888,11 +933,11 @@ function setNodeState(data) {
                         if (stateTemp && stateHum) {
 //                            humAbsRel = 18.016 / 8314.4 * 100000 * stateHum.val / 100 * 6.1078 * Math.pow (10,((7.5 * stateTemp.val) / (237.3 + stateTemp.val))) / (stateTemp.val + 273.15);
                             vCalc = Math.log10((stateHum.val / 100) * (6.1078 * Math.pow (10,((7.5 * stateTemp.val) / (237.3 + stateTemp.val))) / 6.1078));
-                            dewPoint = 237.3 * vCalc / (7.5 - vCalc);
-                            humAbs = Math.pow(10, 5) * 18.016 / 8314.3 * (6.1078 * Math.pow (10,((7.5 * dewPoint) / (237.3 + dewPoint))) / (stateTemp.val + 273.15));
+                            dewPoint = Math.round( (237.3 * vCalc / (7.5 - vCalc)) * 1e2 ) / 1e2;
+                            humAbs = Math.round( (Math.pow(10, 5) * 18.016 / 8314.3 * (6.1078 * Math.pow (10,((7.5 * dewPoint) / (237.3 + dewPoint))) / (stateTemp.val + 273.15))) * 1e2 ) / 1e2;
                             adapter.log.debug(nodeId + ' Humidity Absolute: ' + humAbs.toFixed(2) + ' g/m3 | Dew Point: ' + dewPoint.toFixed(2) + ' °C');
-                            adapter.setState('Sensor_' + nodeId + '.calculated.humidity_absolute', { val: humAbs.toFixed(2), ack: true});
-                            adapter.setState('Sensor_' + nodeId + '.calculated.dew_point', { val: dewPoint.toFixed(2), ack: true});
+                            adapter.setState('Sensor_' + nodeId + '.calculated.humidity_absolute', { val: humAbs, ack: true});
+                            adapter.setState('Sensor_' + nodeId + '.calculated.dew_point', { val: dewPoint, ack: true});
                         }
                     }
                 });
@@ -937,11 +982,6 @@ function setNodeStateV2(data) {
 
     nodeId = data.split(' ')[0];
 
-    if(learningMode == true) {
-        adapter.log.info('Learning v2 node with id: ' + nodeId);
-        createNode(nodeId, data);
-    }
-
     if (/v=[0-9]+/.test(data)) {
         voltage = parseInt((data.match(/v=[0-9]+/)[0].substring(2))) / 1000;
         adapter.setState('Sensor_' + nodeId + '.battery', { val: voltage, ack: true});
@@ -954,7 +994,7 @@ function setNodeStateV2(data) {
                 adapter.log.info(err);
             } else {
                 if(state){
-                    temperature = temperature + state.val;
+                    temperature = Math.round( (temperature + state.val) * 1e2 ) / 1e2;
                     adapter.setState('Sensor_' + nodeId + '.config.offsetTemperature', { val: state.val, ack: true});
                 }
                 adapter.setState('Sensor_' + nodeId + '.temperature', { val: temperature, ack: true});
@@ -969,7 +1009,7 @@ function setNodeStateV2(data) {
                 adapter.log.info(err);
             } else {
                 if(state){
-                    temperature1 = temperature1 + state.val;
+                    temperature1 = Math.round( (temperature1 + state.val) * 1e2 ) / 1e2;
                     adapter.setState('Sensor_' + nodeId + '.config.offsetTemperature_1', { val: state.val, ack: true});
                 }
                 adapter.setState('Sensor_' + nodeId + '.temperature_1', { val: temperature1, ack: true});
@@ -984,7 +1024,7 @@ function setNodeStateV2(data) {
                 adapter.log.info(err);
             } else {
                 if(state){
-                    temperature2 = temperature2 + state.val;
+                    temperature2 = Math.round( (temperature2 + state.val) * 1e2 ) / 1e2;
                     adapter.setState('Sensor_' + nodeId + '.config.offsetTemperature_2', { val: state.val, ack: true});
                 }
                 adapter.setState('Sensor_' + nodeId + '.temperature_2', { val: temperature2, ack: true});
@@ -999,7 +1039,7 @@ function setNodeStateV2(data) {
                 adapter.log.info(err);
             } else {
                 if(state){
-                    humidity = humidity + state.val;
+                    humidity = Math.round( (humidity + state.val) * 1e2 ) / 1e2;
                     adapter.setState('Sensor_' + nodeId + '.config.offsetHumidity', { val: state.val, ack: true});
                 }
                 adapter.setState('Sensor_' + nodeId + '.humidity', { val: humidity, ack: true});
@@ -1014,7 +1054,7 @@ function setNodeStateV2(data) {
                 adapter.log.info(err);
             } else {
                 if(state){
-                    pressure = pressure + state.val;
+                    pressure = Math.round( (pressure + state.val) * 1e2 ) / 1e2;
                     adapter.setState('Sensor_' + nodeId + '.config.offsetPressure', { val: state.val, ack: true});
                 }
                 adapter.setState('Sensor_' + nodeId + '.pressure', { val: pressure, ack: true});
@@ -1029,7 +1069,7 @@ function setNodeStateV2(data) {
                 adapter.log.info(err);
             } else {
                 if(state){
-                    height = height + state.val;
+                    height = Math.round( (height + state.val) * 1e2 ) / 1e2;
                     adapter.setState('Sensor_' + nodeId + '.config.offsetHeight', { val: state.val, ack: true});
                 }
                 adapter.setState('Sensor_' + nodeId + '.height', { val: height, ack: true});
@@ -1044,7 +1084,7 @@ function setNodeStateV2(data) {
                 adapter.log.info(err);
             } else {
                 if(state){
-                    distance = distance + state.val;
+                    distance = Math.round( (distance + state.val) * 1e2 ) / 1e2;
                     adapter.setState('Sensor_' + nodeId + '.config.offsetDistance', { val: state.val, ack: true});
                 }
                 adapter.setState('Sensor_' + nodeId + '.distance', { val: distance, ack: true});
@@ -1055,6 +1095,7 @@ function setNodeStateV2(data) {
     if (/r=[0-9]/.test(data)) {
         contact = parseInt((data.match(/r=[0-9]+/)[0].substring(2)));
         if(contact === 0 || contact === 1){
+        contact = Boolean(contact);
         adapter.setState('Sensor_' + nodeId + '.contact', { val: contact, ack: true});
         } else {
             adapter.log.warn('Wrong contact state received: Sensor_' + nodeId + '.contact : ' + contact);
@@ -1098,6 +1139,7 @@ function setNodeStateV2(data) {
     if (/sy=[0-9]/.test(data)) {
         sync = parseInt((data.match(/sy=[0-9]+/)[0].substring(3)));
         if(sync === 0 || sync === 1){
+        sync = Boolean(sync);
         adapter.setState('Sensor_' + nodeId + '.sync', { val: sync, ack: true});
         } else {
             adapter.log.warn('Wrong sync state received: Sensor_' + nodeId + '.sync : ' + sync);
@@ -1115,11 +1157,11 @@ function setNodeStateV2(data) {
                         if (stateTemp && stateHum) {
 //                            humAbsRel = 18.016 / 8314.4 * 100000 * stateHum.val / 100 * 6.1078 * Math.pow (10,((7.5 * stateTemp.val) / (237.3 + stateTemp.val))) / (stateTemp.val + 273.15);
                             vCalc = Math.log10((stateHum.val / 100) * (6.1078 * Math.pow (10,((7.5 * stateTemp.val) / (237.3 + stateTemp.val))) / 6.1078));
-                            dewPoint = 237.3 * vCalc / (7.5 - vCalc);
-                            humAbs = Math.pow(10, 5) * 18.016 / 8314.3 * (6.1078 * Math.pow (10,((7.5 * dewPoint) / (237.3 + dewPoint))) / (stateTemp.val + 273.15));
+                            dewPoint = Math.round( (237.3 * vCalc / (7.5 - vCalc)) * 1e2 ) / 1e2;
+                            humAbs = Math.round( (Math.pow(10, 5) * 18.016 / 8314.3 * (6.1078 * Math.pow (10,((7.5 * dewPoint) / (237.3 + dewPoint))) / (stateTemp.val + 273.15))) * 1e2 ) / 1e2;
                             adapter.log.debug(nodeId + ' Humidity Absolute: ' + humAbs.toFixed(2) + ' g/m3 | Dew Point: ' + dewPoint.toFixed(2) + ' °C');
-                            adapter.setState('Sensor_' + nodeId + '.calculated.humidity_absolute', { val: humAbs.toFixed(2), ack: true});
-                            adapter.setState('Sensor_' + nodeId + '.calculated.dew_point', { val: dewPoint.toFixed(2), ack: true});
+                            adapter.setState('Sensor_' + nodeId + '.calculated.humidity_absolute', { val: humAbs, ack: true});
+                            adapter.setState('Sensor_' + nodeId + '.calculated.dew_point', { val: dewPoint, ack: true});
                         }
                     }
                 });
@@ -1207,9 +1249,9 @@ function main() {
             dataString = '' + data;
             dataString = dataString.replace(/[\r]/g, '');
             if (/^NodeId/.test(dataString) && dataString.match(/^NodeId,\d+/)[0].substring(7) >= 1 && /data:OK/.test(dataString)) {
-                setNodeState(dataString);
+                nodeSet(dataString, 1);
             } else if (/^[0-9]+\s[a-z]{1,4}=\d+&/.test(dataString) && dataString.split(' ')[0] >= 1) {
-                setNodeStateV2(dataString);
+                nodeSet(dataString, 2);
             } else {
                 adapter.log.info('Invalid data: ' + data);
             }
