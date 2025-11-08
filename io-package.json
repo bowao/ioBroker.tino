@@ -97,6 +97,7 @@
         "extIcon": "https://raw.githubusercontent.com/bowao/ioBroker.tino/master/admin/tino.png",
         "readme": "https://github.com/bowao/ioBroker.tino/blob/master/README.md",
         "loglevel": "info",
+        "tier": 2,
         "mode": "daemon",
         "type": "hardware",
         "compact": true,
