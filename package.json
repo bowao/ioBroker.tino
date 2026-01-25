@@ -9,6 +9,7 @@
   "homepage": "https://github.com/bowao/ioBroker.tino",
   "license": "MIT",
   "keywords": [
+    "ioBroker",
     "raspberry",
     "funksensor",
     "nurazur",
