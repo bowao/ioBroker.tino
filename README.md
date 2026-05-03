@@ -185,6 +185,8 @@ zusätzlich werden für das Empfänger-Protokoll Version 2.2 folgende Datenpunkt
 ### 0.0.1
 - (bowao) initial release
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## License
 MIT License
 
