@@ -129,6 +129,10 @@ zusätzlich werden für das Empfänger-Protokoll Version 2.2 folgende Datenpunkt
 
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+- (ioBroker-Bot) Adapter requires js-controller >= 6.0.11 now.
+
 ### 1.1.1
 - Optimization for js-controller 3.3
 
